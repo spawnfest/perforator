@@ -13,7 +13,9 @@ perforator_stats_test_() ->
         fun() -> ok end,
         fun(_) -> ok end,
         [
-            {"Average value calculation test", fun test_average/0}
+            {"Average value calculation test", fun test_average/0},
+            {"Min value calculation test", fun test_min/0},
+            {"Max value calculation test", fun test_max/0}
         ]
     }.
 
@@ -27,3 +29,17 @@ test_average() ->
     ],
     ExpectedAverage = [{cpu_util, 2.0}, {cpu_load, 5.0}],
     ?assertEqual(ExpectedAverage, perforator_stats:average(Reads)).
+
+test_min() ->
+    Reads = [
+        [{a, 1}, {b, 5}], [{a, 3}, {b, 3}]
+    ],
+    ExpectedMin = [{a, 1}, {b, 3}],
+    ?assertEqual(ExpectedMin, perforator_stats:min(Reads)).
+
+test_max() ->
+    Reads = [
+        [{a, 1}, {b, 5}], [{a, 3}, {b, 3}]
+    ],
+    ExpectedMax = [{a, 3}, {b, 5}],
+    ?assertEqual(ExpectedMax, perforator_stats:max(Reads)).
