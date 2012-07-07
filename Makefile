@@ -27,4 +27,9 @@ perf:
 
 perf_%:
 	ERL_FLAGS="$(ERLOPTS)" $(rebar) skip_deps=true suite=$* perf
+
+shell:
+	erl -pa ebin/ -pa deps/*/ebin/ -sname shell
+
+
 .PHONY: test
