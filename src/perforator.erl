@@ -23,7 +23,7 @@ run(Module) ->
     _RunDate = calendar:local_time(),
     Tests = module_tests(Module),
     TestResults = run_tests(Tests),
-    save_results(Module, TestResults).
+    perforator_results:save(Module, TestResults).
 
 run_tests(Tests) ->
     lists:map(fun (Test) ->
@@ -54,12 +54,6 @@ run_test({raw, TestFun}) ->
 
 run_test({generator, _TestFun}) ->
     {error, not_implemented}.
-
-save_results(Module, TestResults) ->
-    FilePath = ?RESULT_DIR ++ atom_to_list(Module) ++ ".perf",
-    ok = filelib:ensure_dir(FilePath),
-    ?info("Writing perforator results to file ~p.~n", [FilePath]),
-    ok = file:write_file(FilePath, io_lib:format("~p", [TestResults])).
 
 module_tests(Module) ->
     try Module:module_info(exports) of
