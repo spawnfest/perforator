@@ -6,10 +6,8 @@
     run/1
 ]).
 
--include("log_utils.hrl").
-
--define(TEST_FUN_SUFFIX, "_perf").
--define(GENERATOR_FUN_SUFFIX, "_perf_").
+-include("include/log_utils.hrl").
+-include("include/perforator.hrl").
 
 -ifdef(TEST).
 -compile(export_all).
@@ -36,24 +34,14 @@ run_test({foreach, SetupFun, CleanupFun, TestObjs}) ->
         run_test({setup, SetupFun, CleanupFun, TestObj})
     end, TestObjs);
 run_test({setup, SetupFun, CleanupFun, TestObj}) ->
-    try SetupFun() of
-        Args ->
-            Results = case test_obj_is_primitive(TestObj) of
-                true ->
-                    exec_primitive_test_obj(TestObj, [{args, Args}]);
-                false ->
-                    run_test(TestObj)
-            end,
-            try CleanupFun(Args)
-            catch C:R ->
-                ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
-            after
-                Results
-            end
-    catch
-        C:R ->
-            ?error("Context setup failed: {~p, ~p}~n", [C, R]),
-            {error, {C, R}}
+    case test_obj_is_primitive(TestObj) of
+        true ->
+            exec_primitive_test_obj(TestObj, [
+                {setup_fun, SetupFun},
+                {cleanup_fun, CleanupFun}
+            ]);
+        false ->
+            run_test(TestObj)
     end;
 run_test(PrimitiveTestObj) ->
     case test_obj_is_primitive(PrimitiveTestObj) of
@@ -85,21 +73,48 @@ exec_primitive_test_obj(Fun, Opts) when is_function(Fun) ->
     exec_primitive_test_obj(RawFun, Opts);
 
 exec_primitive_test_obj({raw_fun, {Module, Function, Arity}}, Opts) ->
-    Args = proplists:get_value(args, Opts, []),
-    Pid = perforator_metrics:init_collect(),
-    try
-        case Arity of
-            %% we could have received some arguments, but we don't want them
-            0 -> timer:tc(Module, Function, []);
-            _ -> timer:tc(Module, Function, Args)
+    RunCount = proplists:get_value(run_count, Opts, ?DEFAULT_RUN_COUNT),
+    SleepTime = proplists:get_value(sleep_time, Opts, ?DEFAULT_SLEEP_TIME),
+    RunResults = lists:map(fun (RunNum) ->
+        try run_testcase_setup(Opts) of
+           Args ->
+               FunArgs = maybe_strip_args(Arity, Args),
+               timer:sleep(SleepTime), %% @todo Make this precise
+               Results = {RunNum, perform_run({Module, Function, FunArgs})},
+               try run_testcase_cleanup(Opts, Args)
+               catch C:R ->
+                   ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
+               end,
+               timer:sleep(SleepTime), %% @todo Make this precise
+               {success, Results}
+        catch
+            C:R ->
+                ?error("Context setup failed: {~p, ~p}~n", [C, R]),
+                {failure, {C, R}}
         end
-    of
+    end, lists:seq(1, RunCount)),
+    {Function, [{runs, RunResults}]}.
+
+
+run_testcase_setup(Opts) ->
+    (proplists:get_value(setup_fun, Opts, fun () -> ok end))().
+
+run_testcase_cleanup(Opts, Args) ->
+    (proplists:get_value(cleanup_fun, Opts, fun (_) -> ok end))(Args).
+
+
+maybe_strip_args(0, _Args) -> []; %% got some args but we don't want them.
+maybe_strip_args(_, Args) -> Args.
+
+perform_run({M, F, A}) ->
+    Pid = perforator_metrics:init_collect(),
+    try timer:tc(M, F, A) of
         {Time, _Value} ->
             {ok, SysMetrics} = perforator_metrics:retrieve(Pid),
-            {ok, [{duration, Time}|SysMetrics]}
+            {success, [{duration, Time}|SysMetrics]}
     catch
         C:R ->
-            {error, {C, R}}
+            {failure, {C, R}}
     end.
 
 module_tests(Module) ->
