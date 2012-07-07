@@ -38,11 +38,11 @@ retrieve(Pid) ->
         {error, unable_to_retrieve_stats}
     end.
 
--spec agregate([{atom(), integer() | float()]) ->
+-spec agregate([{atom(), integer() | float()}]) ->
 [
-    {average, [{atom(), integer() | float()}]},
-    {min, [{atom(), integer() | float()}]},
-    {max, [{atom(), integer() | float()}]},
+    {average, [{atom(), integer() | float()}]} |
+    {min, [{atom(), integer() | float()}]} |
+    {max, [{atom(), integer() | float()}]}
 ].
 agregate(PropList) ->
     [
