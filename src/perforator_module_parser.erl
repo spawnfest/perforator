@@ -7,11 +7,11 @@
 -include("include/perforator.hrl").
 
 -export([
-    extract_tests/1
+    extract_test_objs/1
 ]).
 
--spec extract_tests(atom()) -> perforator_types:test_obj().
-extract_tests(Module) ->
+-spec extract_test_objs(atom()) -> perforator_types:test_obj().
+extract_test_objs(Module) ->
     try Module:module_info(exports) of
         Exports ->
             get_test_objects(Module, Exports)

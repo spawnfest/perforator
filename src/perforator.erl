@@ -19,7 +19,7 @@
 -spec run(Module::atom()) -> ok.
 run(Module) ->
     ok = ensure_deps_started(),
-    Tests = perforator_module_parser:extract_tests(Module),
+    Tests = perforator_module_parser:extract_test_objs(Module),
     TestResults = run_tests(Tests),
     perforator_results:save(Module, TestResults).
 
