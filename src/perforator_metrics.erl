@@ -2,6 +2,7 @@
 
 -module(perforator_metrics).
 
+-compile(export_all).
 -export([
     init_collect/0,
     retrieve/1
@@ -16,7 +17,7 @@ init_collect() ->
 
 collector_process() ->
     Metrics = get_metrics(),
-    Stats = [{erlang:now(), Metrics}],
+    Stats = [{perforator_utils:get_timestamp(), Metrics}],
     collector_process(Stats, ?COLLECT_INTERVAL).
 
 collector_process(Stats, SleepTime) ->
@@ -45,7 +46,7 @@ get_metrics() ->
         %% test run.
         {cpu_util, cpu_sup:util()},
         {cpu_load, cpu_load()}
-    ] ++ memsup:get_system_memory_data().
+    ] ++ mem_load().
 
 
 
@@ -57,3 +58,11 @@ get_metrics() ->
 %% @doc Returns CPU load in standart form (i.e. like from top)
 cpu_load() ->
     cpu_sup:avg1() / 256.
+
+mem_load() ->
+    MemLoad = memsup:get_system_memory_data(),
+    UsedMem = proplists:get_value(total_memory, MemLoad) -
+        proplists:get_value(free_memory, MemLoad),
+    UsedSwp = proplists:get_value(total_swap, MemLoad) -
+        proplists:get_value(free_swap, MemLoad),
+    [{used_memory, UsedMem}, {used_swap, UsedSwp}].
