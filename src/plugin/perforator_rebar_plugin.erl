@@ -5,14 +5,14 @@
 -define(PERFORATOR_DIR, ".perf").
 
 perf(Config, _AppFile) ->
-    ok = filelib:ensure_dir(perforator_dir() ++ "/foobar"),
+    ok = filelib:ensure_dir(perforator_dir() ++ "/bin/foobar"),
     ok = filelib:ensure_dir(ebin_dir() ++ "/foobar"),
 
     CodePath = code:get_path(),
-    true = code:add_path(perforator_dir()),
+    true = code:add_path(filename:join(perforator_dir(), "bin")),
     true = code:add_path(ebin_dir()),
 
-    TestErls = rebar_utils:find_files("test", "\\.erl\$"),
+    _TestErls = rebar_utils:find_files("test", "\\.erl\$"),
     PerfErls = rebar_utils:find_files("test", "\perf.erl\$"),
 
     % @todo susidet normalius options (is Config ir siaip gal custom kokiu
@@ -33,7 +33,14 @@ clean(_Config, _AppFile) ->
 %% ============================================================================
 
 run_perforator(Files) ->
-    erlang:display("FOOBAR").
+    lists:foreach(
+        fun(File) ->
+            perforator:run(
+                list_to_atom(filename:rootname(filename:basename(File)))
+            )
+        end,
+        Files
+    ).
 
 perforator_dir() ->
     {ok, Dir} = file:get_cwd(),
