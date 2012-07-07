@@ -22,9 +22,14 @@ perforator_results_test_() ->
 
 test_save_results() ->
     application:load(perforator),
-    application:set_env(perforator, result_dir, ".perf_test/"),
-    perforator_results:save(sample_module_perf, {perforator_utils:get_timestamp(),
-        [{snacks_consumed, 9001}]}),
-    FilePath = ".perf_test/" ++ atom_to_list(sample_module_perf) ++ ".perf",
+    application:set_env(perforator, result_dir, ".perf/"),
+    perforator_results:save(foobar_perf,
+        {perforator_utils:get_timestamp(), [{snacks_consumed, 9001}]}),
+    {ok,ListDir} = file:list_dir(".perf"),
+    erlang:display(ListDir),
+    BasenameList = [File ||
+        File <- ListDir, lists:prefix(atom_to_list(foobar_perf), File)],
+    [LastFile | _] = lists:sort(fun(A, B) -> A > B end, BasenameList),
+    FilePath = ".perf/" ++ LastFile,
     {ok, [{_Timestamp, [Contents]}]} = file:consult(FilePath),
     ?assertEqual({snacks_consumed, 9001}, Contents).

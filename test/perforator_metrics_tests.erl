@@ -2,6 +2,7 @@
 -compile(export_all).
 
 -include_lib("eunit/include/eunit.hrl").
+-include("include/log_utils.hrl").
 
 %% ============================================================================
 %% Unit Test descriptions
@@ -16,8 +17,8 @@ perforator_metrics_test_() ->
             application:start(os_mon)
         end,
         fun(_) ->
-            application:stop(os_mon),
-            application:stop(sasl)
+            ?silent(critical, application:stop(os_mon)),
+            ?silent(critical, application:stop(sasl))
          end,
         [
             {"Metrics lookup test", fun test_metrics/0},

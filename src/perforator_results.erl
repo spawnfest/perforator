@@ -8,9 +8,13 @@
 
 save(Module, TestResults) ->
     application:load(perforator),
-    FilePath = get_dir() ++ atom_to_list(Module) ++ ".perf",
+    {{Year, Month, Day}, {Hour, Min, _}} = calendar:local_time(),
+    Timestamp =
+        io_lib:format("[~p~p~p-~p:~p]", [Year, Month, Day, Hour, Min]),
+    FilePath = get_dir() ++ atom_to_list(Module) ++
+        "_suite_results" ++ Timestamp ++ ".perf",
     ok = filelib:ensure_dir(FilePath),
-    ?info("Writing perforator results to file ~p.~n", [FilePath]),
+    ?info("Writing perforator results to file ~s.~n", [FilePath]),
     ok = file:write_file(FilePath,
         io_lib:format("~p.~n", [convert_format(TestResults, get_format())])).
 
