@@ -133,12 +133,6 @@ get_test_objects(Module, [{FunName, 0}|Rest], Acc) ->
 get_test_objects(Module, [_|Rest], Acc) ->
     get_test_objects(Module, Rest, Acc).
 
-save_results(Module, TestResults) ->
-    FilePath = ?RESULT_DIR ++ atom_to_list(Module) ++ ".perf",
-    ok = filelib:ensure_dir(FilePath),
-    ?info("Writing perforator results to file ~p.~n", [FilePath]),
-    ok = file:write_file(FilePath, io_lib:format("~p", [TestResults])).
-
 %% ============================================================================
 %% Type checks
 %% ============================================================================
