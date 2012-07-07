@@ -79,12 +79,12 @@ filter_and_tag_test_funs(Module, [{FunName, 0}|Rest], Acc) ->
     %% @todo rewrite this, ewww
     case is_simple_test_fun(FunName) of
         true ->
-            TaggedFun = {raw, fun Module:FunName/0},
+            TaggedFun = {raw, fun() ->  Module:FunName() end},
             filter_and_tag_test_funs(Module, Rest, [TaggedFun|Acc]);
         false ->
             case is_generator_fun(FunName) of
                 true ->
-                    TaggedFun = {generator, fun Module:FunName/0},
+                    TaggedFun = {generator, fun() ->  Module:FunName() end},
                     filter_and_tag_test_funs(Module, Rest, [TaggedFun|Acc]);
                 false ->
                     filter_and_tag_test_funs(Module, Rest, Acc)
