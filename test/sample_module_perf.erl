@@ -15,4 +15,6 @@ sleeping_test_perf() ->
     timer:sleep(100).
 
 generator_test_perf_() ->
-    {foreach, fun () -> ok end, fun (_) -> ok end, []}.
+    {foreach, fun () -> ok end, fun (_) -> ok end, [
+        fun () -> timer:sleep(1000) end
+    ]}.
