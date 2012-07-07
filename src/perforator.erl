@@ -64,24 +64,21 @@ exec_primitive_test_obj(Fun) ->
     exec_primitive_test_obj(Fun, []).
 
 exec_primitive_test_obj(Fun, Opts) when is_function(Fun) ->
-    %% we transform Fun into gay {raw_fun, ...} tuple because
-    %% R14B doesn't support  constructing funs from arguments.
-    FunInfo = erlang:fun_info(Fun),
-    Module = proplists:get_value(module, FunInfo),
-    Function = proplists:get_value(function, FunInfo),
-    Arity = proplists:get_value(arity, FunInfo),
-    RawFun = {raw_fun, {Module, Function, Arity}},
-    exec_primitive_test_obj(RawFun, Opts);
+    exec_test_case(Fun, Opts);
 
-exec_primitive_test_obj({raw_fun, {Module, Function, Arity}}, Opts) ->
+exec_primitive_test_obj({raw_fun, FunSpec={_Module, _Function, _Arity}}, Opts) ->
+    exec_test_case(FunSpec, Opts).
+
+-spec exec_test_case(perforator_types:fun_spec(),
+    perforator_types:test_case_opts()) -> perforator_types:test_case_results().
+exec_test_case(FunSpec, Opts) ->
     RunCount = proplists:get_value(run_count, Opts, ?DEFAULT_RUN_COUNT),
     SleepTime = proplists:get_value(sleep_time, Opts, ?DEFAULT_SLEEP_TIME),
     RunResults = lists:map(fun (RunNum) ->
         try run_testcase_setup(Opts) of
            Args ->
-               FunArgs = maybe_strip_args(Arity, Args),
                timer:sleep(SleepTime), %% @todo Make this precise
-               Results = {RunNum, perform_run({Module, Function, FunArgs})},
+               Results = {RunNum, perform_run(FunSpec, Args)},
                try run_testcase_cleanup(Opts, Args)
                catch C:R ->
                    ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
@@ -94,8 +91,43 @@ exec_primitive_test_obj({raw_fun, {Module, Function, Arity}}, Opts) ->
                 {failure, {C, R}}
         end
     end, lists:seq(1, RunCount)),
-    {Function, [{runs, RunResults}]}.
+    TestCaseName = get_test_case_name(FunSpec),
+    {TestCaseName, [{runs, RunResults}]}.
 
+%% @doc Sorry for this FunSpec crap, but this is needed to:
+%% 1) stay comptabile with pre-R15B Erlang, because I cannot do fun
+%% Module:Function/Arity.
+%% 2) Not wrap stuff into fun's (to influence performance less)
+-spec perform_run(perforator_types:fun_spec(), [term()]) ->
+    perforator_types:run_results().
+perform_run(FunSpec, Args) ->
+    Arity = case FunSpec of
+        Fun when is_function(Fun) ->
+            proplists:get_value(arity, erlang:fun_info(Fun));
+        {_M, _F, Ar} ->
+            Ar
+    end,
+    FunArgs = maybe_strip_args(Arity, Args),
+    Pid = perforator_metrics:init_collect(),
+    try
+        case FunSpec of
+            FunA when is_function(FunA) -> timer:tc(FunA, FunArgs);
+            {M, F, _} -> timer:tc(M, F, FunArgs)
+        end
+    of
+        {Time, _Value} ->
+            {ok, SysMetrics} = perforator_metrics:retrieve(Pid),
+            {success, [{duration, Time}, {metrics, SysMetrics}]}
+    catch
+        C:R ->
+            {failure, {C, R}}
+    end.
+
+-spec get_test_case_name(perforator_types:fun_spec()) -> atom().
+get_test_case_name(Fun) when is_function(Fun) ->
+    proplists:get_value(name, erlang:fun_info(Fun));
+get_test_case_name({_M, F, _Ar}) ->
+    F.
 
 run_testcase_setup(Opts) ->
     (proplists:get_value(setup_fun, Opts, fun () -> ok end))().
@@ -105,18 +137,6 @@ run_testcase_cleanup(Opts, Args) ->
 
 maybe_strip_args(0, _Args) -> []; %% got some args but we don't want them.
 maybe_strip_args(_, Args) -> Args.
-
-perform_run({M, F, A}) ->
-    Pid = perforator_metrics:init_collect(),
-    try timer:tc(M, F, A) of
-        {Time, _Value} ->
-            {ok, SysMetrics} = perforator_metrics:retrieve(Pid),
-            {success, [{duration, Time}, {metrics, SysMetrics}]}
-    catch
-        C:R ->
-            {failure, {C, R}}
-    end.
-
 
 %% ============================================================================
 %% Type checks
@@ -128,6 +148,7 @@ test_obj_is_primitive(TestObj) ->
 %% ============================================================================
 %% Throwaway helper functions
 %% ============================================================================
+
 be_careful() ->
     erlang:garbage_collect(),
     timer:sleep(500).

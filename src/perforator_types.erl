@@ -8,7 +8,11 @@
     test_fun/0,
     test_obj/0,
     primitive_test_obj/0,
-    fixture_test_obj/0
+    fixture_test_obj/0,
+    run_results/0,
+    test_case_results/0,
+    test_case_opts/0,
+    fun_spec/0
 ]).
 
 -type test_obj() :: primitive_test_obj() | fixture_test_obj().
@@ -26,5 +30,11 @@
     {repeat, test_fun(), Times :: pos_integer(), Sleep :: timer:time()}.
 -type desc_decorator() ::
     {desc, string(), test_fun()}.
--type test_fun() :: {raw_fun, {Module::atom(), Funtion::atom(),
-    Arity::non_neg_integer()}}.
+-type test_fun() :: {raw_fun, mfa_spec()}.
+
+-type fun_spec() :: mfa_spec() | fun().
+-type mfa_spec() :: {Module::atom(), Funtion::atom(), Arity::non_neg_integer()}.
+
+-type run_results() :: term(). %% @todo
+-type test_case_results() :: term(). %% @todo
+-type test_case_opts() :: term(). %% @todo
