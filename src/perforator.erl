@@ -36,9 +36,9 @@ run_tests(Tests) ->
     end, Tests).
 
 %% simple _perf() fun.
--spec run_test(TestFun :: fun(() -> term())) ->
+-spec run_test(perforator_types:test_fun_desc()) ->
     {ok, Results :: list()} | {error, Error :: list()}.
-run_test(TestFun) ->
+run_test({raw, TestFun}) ->
     Pid = perforator_metrics:init_collect(),
     try timer:tc(TestFun) of
         {Time, _Value} ->
@@ -47,7 +47,9 @@ run_test(TestFun) ->
     catch
         C:R ->
             {error, {C, R}}
-    end.
+    end;
+run_test({generator, _TestFun}) ->
+    {error, not_implemented}.
 
 save_results(Module, TestResults) ->
     FilePath = ?RESULT_DIR ++ atom_to_list(Module) ++ ".perf",
@@ -58,20 +60,34 @@ save_results(Module, TestResults) ->
 module_tests(Module) ->
     try Module:module_info(exports) of
         Exps ->
-            FunArrList = filter_test_funs(Exps),
-            [FunName || {FunName, _} <- FunArrList]
+            filter_and_tag_test_funs(Module, Exps)
     catch
         error:undef ->
             throw(module_not_found)
     end.
 
-filter_test_funs(Exports) ->
-    lists:filter(fun is_test_fun/1, Exports).
+filter_and_tag_test_funs(Module, Exports) ->
+    filter_and_tag_test_funs(Module, Exports, []).
 
-is_test_fun({FunName, 0}) when is_atom(FunName) ->
-    is_generator_fun(FunName) or is_simple_test_fun(FunName);
-is_test_fun(_) ->
-    false.
+filter_and_tag_test_funs(_Module, [], Acc) ->
+    Acc;
+filter_and_tag_test_funs(Module, [{FunName, 0}|Rest], Acc) ->
+    %% @todo rewrite this, ewww
+    case is_simple_test_fun(FunName) of
+        true ->
+            TaggedFun = {raw, fun Module:FunName/0},
+            filter_and_tag_test_funs(Rest, [TaggedFun|Acc]);
+        false ->
+            case is_generator_fun(FunName) of
+                true ->
+                    TaggedFun = {generator, fun Module:FunName/0},
+                    filter_and_tag_test_funs(Module, Rest, [TaggedFun|Acc]);
+                false ->
+                    filter_and_tag_test_funs(Module, Rest, Acc)
+            end
+    end;
+filter_and_tag_test_funs(Module, [_|Rest], Acc) ->
+    filter_and_tag_test_funs(Module, Rest, Acc).
 
 is_generator_fun(FunName) ->
     NameStr = atom_to_list(FunName),
