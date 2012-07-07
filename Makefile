@@ -8,6 +8,9 @@ get-deps:
 compile:
 	$(rebar) compile
 
+clean:
+	$(rebar) clean
+
 nodeps:
 	$(rebar) compile skip_deps=true
 
@@ -17,3 +20,4 @@ test:
 test_%:
 	$(rebar) skip_deps=true suite=$* eunit
 
+.PHONY: test
