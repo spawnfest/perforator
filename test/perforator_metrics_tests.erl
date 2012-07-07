@@ -20,7 +20,6 @@ perforator_metrics_test_() ->
             application:stop(sasl)
          end,
         [
-            {"Average value calculation test", fun test_average/0},
             {"Metrics lookup test", fun test_metrics/0},
             {"Collector process test", fun test_collector/0},
             {"Dying collect process test", fun test_dead_collector/0}
@@ -30,13 +29,6 @@ perforator_metrics_test_() ->
 %% ============================================================================
 %% Actual tests
 %% ============================================================================
-
-test_average() ->
-    Reads = [
-        [{cpu_util, N}, {cpu_load, N+3}] || N <- lists:seq(1, 3)
-    ],
-    ExpectedAverage = [{cpu_util, 2.0}, {cpu_load, 5.0}],
-    ?assertEqual(ExpectedAverage, perforator_metrics:average(Reads)).
 
 test_metrics() ->
     Read = perforator_metrics:get_metrics(),

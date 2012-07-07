@@ -5,8 +5,7 @@
 -compile(export_all).
 -export([
     init_collect/0,
-    retrieve/1,
-    average/1
+    retrieve/1
 ]).
 
 -define(COLLECT_INTERVAL, 300).
@@ -46,20 +45,6 @@ get_metrics() ->
         {cpu_util, cpu_sup:util()},
         {cpu_load, cpu_load()}
     ] ++ mem_load().
-
-average(MetricsList) ->
-    NumberOfReads = length(MetricsList),
-    average(MetricsList, NumberOfReads, []).
-average([FirstRead | Rest], NumberOfReads, []) ->
-    average(Rest, NumberOfReads, FirstRead);
-average([NextRead | Rest], NumberOfReads, Sum) ->
-    NewSum =
-        [{MetricTag, MetricVal + proplists:get_value(MetricTag, NextRead)} ||
-        {MetricTag, MetricVal} <- Sum],
-    average(Rest, NumberOfReads, NewSum);
-average([], NumberOfReads, Sum) ->
-    [{MetricTag, MetricVal / NumberOfReads} || {MetricTag, MetricVal} <- Sum].
-
 
 %% ===================================================================
 %% Helpers
