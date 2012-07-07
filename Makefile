@@ -17,7 +17,7 @@ nodeps:
 	$(rebar) compile skip_deps=true
 
 test:
-	$(rebar) skip_deps=true eunit
+	EUNIT_FLAGS="$(ERLOPTS)" $(rebar) skip_deps=true eunit
 
 test_%:
 	$(rebar) skip_deps=true suite=$* eunit
