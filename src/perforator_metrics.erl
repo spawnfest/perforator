@@ -5,7 +5,8 @@
 -compile(export_all).
 -export([
     init_collect/0,
-    retrieve/1
+    retrieve/1,
+    agregate/1
 ]).
 
 -define(COLLECT_INTERVAL, 300).
@@ -37,6 +38,12 @@ retrieve(Pid) ->
         {error, unable_to_retrieve_stats}
     end.
 
+agregate(TickList) ->
+    [
+        {average, perforator_stats:average(TickList)},
+        {min, perforator_stats:min(TickList)},
+        {max, perforator_stats:max(TickList)}
+    ].
 
 get_metrics() ->
     [

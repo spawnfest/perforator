@@ -22,7 +22,8 @@ perforator_metrics_test_() ->
         [
             {"Metrics lookup test", fun test_metrics/0},
             {"Collector process test", fun test_collector/0},
-            {"Dying collect process test", fun test_dead_collector/0}
+            {"Dying collect process test", fun test_dead_collector/0},
+            {"Agregate stats test", fun test_agregate/0}
         ]
     }.
 
@@ -49,3 +50,12 @@ test_dead_collector() ->
     Pid = spawn(fun() -> timer:sleep(1) end),
     ?assertEqual({error, unable_to_retrieve_stats},
         perforator_metrics:retrieve(Pid)).
+
+test_agregate() ->
+    ReadList = [[{foo, 2}, {bar, 15}], [{foo, 6}, {bar, 1}]],
+    ExpectedReturn = [
+        {average, [{foo, 4.0}, {bar, 8.0}]},
+        {min, [{foo, 2}, {bar, 1}]},
+        {max, [{foo, 6}, {bar, 15}]}
+    ],
+    ?assertEqual(ExpectedReturn, perforator_metrics:agregate(ReadList)).
