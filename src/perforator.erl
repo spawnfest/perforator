@@ -35,10 +35,7 @@ run_tests(Tests) ->
         end
     end, Tests).
 
-%% simple _perf() fun.
--spec run_test(perforator_types:test_fun_desc()) ->
-    {ok, Results :: list()} | {error, Error :: list()}.
-run_test({raw, TestFun}) ->
+exec_fun(TestFun) ->
     Pid = perforator_metrics:init_collect(),
     try timer:tc(TestFun) of
         {Time, _Value} ->
@@ -47,7 +44,14 @@ run_test({raw, TestFun}) ->
     catch
         C:R ->
             {error, {C, R}}
-    end;
+    end.
+
+%% simple _perf() fun.
+-spec run_test(perforator_types:test_fun_desc()) ->
+    {ok, Results :: list()} | {error, Error :: list()}.
+run_test({raw, TestFun}) ->
+    exec_fun(TestFun);
+
 run_test({generator, _TestFun}) ->
     {error, not_implemented}.
 
@@ -76,7 +80,7 @@ filter_and_tag_test_funs(Module, [{FunName, 0}|Rest], Acc) ->
     case is_simple_test_fun(FunName) of
         true ->
             TaggedFun = {raw, fun Module:FunName/0},
-            filter_and_tag_test_funs(Rest, [TaggedFun|Acc]);
+            filter_and_tag_test_funs(Module, Rest, [TaggedFun|Acc]);
         false ->
             case is_generator_fun(FunName) of
                 true ->
