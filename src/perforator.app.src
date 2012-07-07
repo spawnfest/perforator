@@ -1,0 +1,12 @@
+{application, perforator,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { perforator_app, []}},
+  {env, []}
+ ]}.
