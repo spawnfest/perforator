@@ -86,7 +86,7 @@ exec_primitive_test_obj({raw_fun, {Module, Function, Arity}}, Opts) ->
                    ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
                end,
                timer:sleep(SleepTime), %% @todo Make this precise
-               {success, Results}
+               Results
         catch
             C:R ->
                 ?error("Context setup failed: {~p, ~p}~n", [C, R]),
@@ -111,7 +111,7 @@ perform_run({M, F, A}) ->
     try timer:tc(M, F, A) of
         {Time, _Value} ->
             {ok, SysMetrics} = perforator_metrics:retrieve(Pid),
-            {success, [{duration, Time}|SysMetrics]}
+            {success, [{duration, Time}, {metrics, SysMetrics}]}
     catch
         C:R ->
             {failure, {C, R}}
