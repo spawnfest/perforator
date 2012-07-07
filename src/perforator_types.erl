@@ -1,4 +1,7 @@
-%% @doc Perforator types
+%% @doc perforator types
+%%
+%% @author Ignas Vyšniauskas <i.vysniauskas@gmail.com>
+
 -module(perforator_types).
 
 -export_type([

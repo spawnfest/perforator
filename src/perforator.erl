@@ -1,4 +1,6 @@
 %% @doc Main API module
+%%
+%% @author Ignas Vyšniauskas <i.vysniauskas@gmail.com>
 
 -module(perforator).
 
@@ -17,8 +19,7 @@
 -spec run(Module::atom()) -> ok.
 run(Module) ->
     ok = ensure_deps_started(),
-    _RunDate = calendar:local_time(),
-    Tests = module_tests(Module),
+    Tests = perforator_module_parser:extract_tests(Module),
     TestResults = run_tests(Tests),
     perforator_results:save(Module, TestResults).
 
@@ -102,7 +103,6 @@ run_testcase_setup(Opts) ->
 run_testcase_cleanup(Opts, Args) ->
     (proplists:get_value(cleanup_fun, Opts, fun (_) -> ok end))(Args).
 
-
 maybe_strip_args(0, _Args) -> []; %% got some args but we don't want them.
 maybe_strip_args(_, Args) -> Args.
 
@@ -117,36 +117,6 @@ perform_run({M, F, A}) ->
             {failure, {C, R}}
     end.
 
-module_tests(Module) ->
-    try Module:module_info(exports) of
-        Exports ->
-            get_test_objects(Module, Exports)
-    catch
-        error:undef ->
-            throw(module_not_found)
-    end.
-get_test_objects(Module, Exports) ->
-    get_test_objects(Module, Exports, []).
-
-get_test_objects(_Module, [], Acc) ->
-    Acc;
-get_test_objects(Module, [{FunName, 0}|Rest], Acc) ->
-    %% @todo rewrite this, ewww
-    case is_raw_test_fun(FunName) of
-        true ->
-            TestObj = {raw_fun, {Module, FunName, 0}},
-            get_test_objects(Module, Rest, [TestObj|Acc]);
-        false ->
-            case is_generator_fun(FunName) of
-                true ->
-                    TestObj = apply(Module, FunName, []),
-                    get_test_objects(Module, Rest, [TestObj|Acc]);
-                false ->
-                    get_test_objects(Module, Rest, Acc)
-            end
-    end;
-get_test_objects(Module, [_|Rest], Acc) ->
-    get_test_objects(Module, Rest, Acc).
 
 %% ============================================================================
 %% Type checks
@@ -155,16 +125,8 @@ get_test_objects(Module, [_|Rest], Acc) ->
 test_obj_is_primitive(TestObj) ->
     sheriff:check(TestObj, {perforator_types, primitive_test_obj}).
 
-is_generator_fun(FunName) ->
-    NameStr = atom_to_list(FunName),
-    lists:suffix(?GENERATOR_FUN_SUFFIX, NameStr).
-
-is_raw_test_fun(FunName) ->
-    NameStr = atom_to_list(FunName),
-    lists:suffix(?TEST_FUN_SUFFIX, NameStr).
-
 %% ============================================================================
-%% Foobarish helper functions
+%% Throwaway helper functions
 %% ============================================================================
 be_careful() ->
     erlang:garbage_collect(),
