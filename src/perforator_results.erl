@@ -6,8 +6,6 @@
     save/2
 ]).
 
--define(RESULT_DIR, ".perf/").
-
 save(Module, TestResults) ->
     application:load(perforator),
     FilePath = get_dir() ++ atom_to_list(Module) ++ ".perf",

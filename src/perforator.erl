@@ -10,7 +10,6 @@
 
 -define(TEST_FUN_SUFFIX, "_perf").
 -define(GENERATOR_FUN_SUFFIX, "_perf_").
--define(RESULT_DIR, ".perf/").
 
 -ifdef(TEST).
 -compile(export_all).
