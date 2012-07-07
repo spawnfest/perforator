@@ -22,7 +22,8 @@ perforator_metrics_test_() ->
         [
             {"Average value calculation test", fun test_average/0},
             {"Metrics lookup test", fun test_metrics/0},
-            {"Collector process test", fun test_collector/0}
+            {"Collector process test", fun test_collector/0},
+            {"Dying collect process test", fun test_dead_collector/0}
         ]
     }.
 
@@ -51,3 +52,8 @@ test_collector() ->
     timer:sleep(1000),
     {ok, Return} = perforator_metrics:retrieve(Pid),
     ?assertEqual(4, length(Return)).
+
+test_dead_collector() ->
+    Pid = spawn(fun() -> timer:sleep(1) end),
+    ?assertEqual({error, unable_to_retrieve_stats},
+        perforator_metrics:retrieve(Pid)).
