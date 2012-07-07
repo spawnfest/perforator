@@ -1,12 +1,12 @@
 {application, perforator,
  [
-  {description, ""},
-  {vsn, "1"},
+  {description, "Performance unit testing library"},
+  {vsn, "1.0.0"},
   {registered, []},
   {applications, [
                   kernel,
                   stdlib
                  ]},
-  {mod, { perforator_app, []}},
+  {mod, {perforator_app, []}},
   {env, []}
  ]}.

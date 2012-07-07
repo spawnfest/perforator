@@ -1,5 +1,6 @@
 ebin/
 .eunit/
+.perf/
 *.dump
 misc/
 deps/*

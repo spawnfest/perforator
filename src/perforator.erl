@@ -6,8 +6,8 @@
     run/1
 ]).
 
--define(GENERATOR_FUN_SUFFIX, "_perf_").
 -define(TEST_FUN_SUFFIX, "_perf").
+-define(GENERATOR_FUN_SUFFIX, "_perf_").
 -define(RESULT_DIR, ".perf/").
 
 -ifdef(TEST).
@@ -48,11 +48,9 @@ run_test(TestFun) ->
     end.
 
 save_results(Module, TestResults) ->
-    FilePath = ?RESULT_DIR ++ atom_to_list(Module),
-    filelib:ensure_dir(FilePath),
-    io:format("BAGAAHHA: ~p~n", [FilePath]),
-    file:write_file(FilePath, io_lib:format("~p", [TestResults])).
-
+    FilePath = ?RESULT_DIR ++ atom_to_list(Module) ++ ".perf",
+    ok = filelib:ensure_dir(FilePath),
+    ok = file:write_file(FilePath, io_lib:format("~p", [TestResults])).
 
 module_tests(Module) ->
     try Module:module_info(exports) of
