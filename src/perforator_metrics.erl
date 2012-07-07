@@ -24,7 +24,7 @@ collector_process(Stats, SleepTime) ->
     receive {retrieve, Sender} -> Sender ! {stats, Stats}
     after SleepTime ->
         MoreMetrics = get_metrics(),
-        NewStats = [{erlang:now(), MoreMetrics}|Stats],
+        NewStats = [{perforator_utils:get_timestamp(), MoreMetrics}|Stats],
         collector_process(NewStats, SleepTime)
     end.
 

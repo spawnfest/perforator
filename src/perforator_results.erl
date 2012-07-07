@@ -12,7 +12,7 @@ save(Module, TestResults) ->
     ok = filelib:ensure_dir(FilePath),
     ?info("Writing perforator results to file ~p.~n", [FilePath]),
     ok = file:write_file(FilePath,
-        io_lib:format("~p.", [convert_format(TestResults, get_format())])).
+        io_lib:format("~p.~n", [convert_format(TestResults, get_format())])).
 
 convert_format(TestResults, default) ->
     TestResults;
