@@ -38,11 +38,17 @@ retrieve(Pid) ->
         {error, unable_to_retrieve_stats}
     end.
 
-agregate(TickList) ->
+-spec agregate([{atom(), integer() | float()]) ->
+[
+    {average, [{atom(), integer() | float()}]},
+    {min, [{atom(), integer() | float()}]},
+    {max, [{atom(), integer() | float()}]},
+].
+agregate(PropList) ->
     [
-        {average, perforator_stats:average(TickList)},
-        {min, perforator_stats:min(TickList)},
-        {max, perforator_stats:max(TickList)}
+        {average, perforator_stats:average(PropList)},
+        {min, perforator_stats:min(PropList)},
+        {max, perforator_stats:max(PropList)}
     ].
 
 get_metrics() ->
