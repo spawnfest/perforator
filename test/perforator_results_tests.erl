@@ -3,8 +3,6 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--define(RESULT_DIR, ".perf/").
-
 %% ============================================================================
 %% Unit Test descriptions
 %% ============================================================================
@@ -23,8 +21,10 @@ perforator_results_test_() ->
 %% ============================================================================
 
 test_save_results() ->
-    perforator_results:save(sample_module_perf, [perforator_utils:get_timestamp(),
-        [{snacks_consumed, 9001}]]),
-    FilePath = ?RESULT_DIR ++ atom_to_list(sample_module_perf) ++ ".perf",
-    {ok, [[_Timestamp, [Contents]]]} = file:consult(FilePath),
+    application:load(perforator),
+    application:set_env(perforator, result_dir, ".perf_test/"),
+    perforator_results:save(sample_module_perf, {perforator_utils:get_timestamp(),
+        [{snacks_consumed, 9001}]}),
+    FilePath = ".perf_test/" ++ atom_to_list(sample_module_perf) ++ ".perf",
+    {ok, [{_Timestamp, [Contents]}]} = file:consult(FilePath),
     ?assertEqual({snacks_consumed, 9001}, Contents).
