@@ -12,7 +12,7 @@ simple_test_perf() ->
     ok.
 
 sleeping_test_perf() ->
-    timer:sleep(100).
+    timer:sleep(2000).
 
 generator_test_perf_() ->
     {foreach, fun () -> ok end, fun (_) -> ok end, [
