@@ -1,1 +1,6 @@
 Perforator is a unit-testing style performance testing tool.
+
+To use perforator rebar plugin add the following to your rebar.config:
+
+{plugin_dir, [?PATH_TO_PERFORATOR/src/plugin]}.
+{plugins, [perforator_rebar_plugin]}.
