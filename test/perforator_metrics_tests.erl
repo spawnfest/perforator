@@ -21,7 +21,8 @@ perforator_metrics_test_() ->
          end,
         [
             {"Average value calculation test", fun test_average/0},
-            {"Metrics lookup test", fun test_metrics/0}
+            {"Metrics lookup test", fun test_metrics/0},
+            {"Collector process test", fun test_collector/0}
         ]
     }.
 
@@ -45,3 +46,8 @@ test_metrics() ->
     ?assertEqual(lists:duplicate(length(Check1) + length(Check2), true),
         Check1 ++ Check2).
 
+test_collector() ->
+    Pid = perforator_metrics:init_collect(),
+    timer:sleep(1000),
+    {ok, Return} = perforator_metrics:retrieve(Pid),
+    ?assertEqual(4, length(Return)).

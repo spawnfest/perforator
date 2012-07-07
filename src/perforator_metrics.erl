@@ -29,7 +29,6 @@ collector_process(Stats, SleepTime) ->
         collector_process(NewStats, SleepTime)
     end.
 
-
 retrieve(Pid) ->
     Pid ! {retrieve, self()},
     receive
@@ -38,7 +37,6 @@ retrieve(Pid) ->
     after ?MAX_RETRIEVE_WAIT ->
         {error, unable_to_retrieve_stats}
     end.
-
 
 
 get_metrics() ->
@@ -61,9 +59,6 @@ average([NextRead | Rest], NumberOfReads, Sum) ->
     average(Rest, NumberOfReads, NewSum);
 average([], NumberOfReads, Sum) ->
     [{MetricTag, MetricVal / NumberOfReads} || {MetricTag, MetricVal} <- Sum].
-
-
-
 
 
 %% ===================================================================
