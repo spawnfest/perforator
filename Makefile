@@ -1,3 +1,5 @@
+ERLOPTS:= -config app.config -boot start_sasl
+
 rebar = rebar
 
 default: compile
@@ -20,4 +22,9 @@ test:
 test_%:
 	$(rebar) skip_deps=true suite=$* eunit
 
+perf:
+	ERL_FLAGS="$(ERLOPTS)" $(rebar) skip_deps=true perf
+
+perf_%:
+	ERL_FLAGS="$(ERLOPTS)" $(rebar) skip_deps=true suite=$* perf
 .PHONY: test
