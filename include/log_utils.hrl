@@ -18,6 +18,9 @@
 -define(info(Msg, Opts),
     error_logger:info_report(?DEFAULT_INFO(Msg) ++ Opts)).
 
+-define(status(Msg, Opts),
+    error_logger:info_report(io_lib:format(Msg, Opts))).
+
 -define(silent(Expr), (
         fun() ->
                 error_logger:tty(false),
@@ -26,7 +29,7 @@
                 catch
                     C:R ->
                         error_logger:tty(true),
-                        ?error("shouldn't have silenced here", [C,R])
+                        ?error("shouldn't have silenced here", [{C, R}])
                 after
                     error_logger:tty(true)
                 end

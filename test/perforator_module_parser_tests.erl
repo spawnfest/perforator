@@ -5,7 +5,7 @@
 -include("include/eunit_utils.hrl").
 
 export_tests_test() ->
-    TestModule = sample_module_perf,
+    TestModule = tested_module_perf_not,
     Tests = perforator_module_parser:extract_test_objs(TestModule),
     ?assertSublist(
         [{raw_fun, {TestModule, simple_test_perf, 0}},

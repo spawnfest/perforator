@@ -1,6 +1,6 @@
-%% @doc Sample module used for unit testing.
+%% @doc Sample module used for unit testing, full of trash.
 
--module(sample_module_perf).
+-module(tested_module_perf_not).
 
 -compile(export_all).
 

@@ -19,13 +19,13 @@
 run(Module) ->
     ?silent(ok = ensure_deps_started()),
     Tests = perforator_module_parser:extract_test_objs(Module),
+    ?status("Perforating module ~p:", [Module]),
     TestResults = run_tests(Tests),
     ok = perforator_results:save(Module, TestResults),
     ?silent(stop_deps()).
 
 run_tests(Tests) ->
     lists:flatten(lists:map(fun (Test) ->
-        ?info("Running test ~p~n", [Test]),
         _Results = run_test(Test)
     end, Tests)).
 
@@ -48,13 +48,13 @@ run_test({setup, SetupFun, CleanupFun, TestObj}) ->
                    Results = run_test(TestObj),
                    try run_testcase_cleanup([], Args)
                    catch C:R ->
-                       ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
+                       ?error("Context cleanup failed", [{C, R}])
                    end,
                    be_careful(), %% @todo Make this precise
                    Results
             catch
                 C:R ->
-                    ?error("Context setup failed: {~p, ~p}~n", [C, R]),
+                    ?error("Context setup failed", [{C, R}]),
                     {failure, {C, R}}
             end
     end;
@@ -63,8 +63,8 @@ run_test(PrimitiveTestObj) ->
         true ->
             exec_primitive_test_obj(PrimitiveTestObj);
         false ->
-            ?error("Unrecognized test object ~p, aborting~n",
-                [PrimitiveTestObj]),
+            ?error("Unrecognized test object, aborting",
+                [{obj, PrimitiveTestObj}]),
             {error, {unknown_test_object, PrimitiveTestObj}}
     end.
 
@@ -88,6 +88,7 @@ exec_primitive_test_obj({raw_fun, FunSpec={_Module, _Function, _Arity}}, Opts) -
 exec_test_case(FunSpec, Opts) ->
     RunCount = proplists:get_value(run_count, Opts, ?DEFAULT_RUN_COUNT),
     SleepTime = proplists:get_value(sleep_time, Opts, ?DEFAULT_SLEEP_TIME),
+    ?status("Running test... ~p", [get_test_case_name(FunSpec)]),
     RunResults = lists:map(fun (RunNum) ->
         try run_testcase_setup(Opts) of
            Args ->
@@ -95,13 +96,13 @@ exec_test_case(FunSpec, Opts) ->
                Results = {RunNum, perform_run(FunSpec, Args)},
                try run_testcase_cleanup(Opts, Args)
                catch C:R ->
-                   ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
+                   ?error("Context cleanup failed", [{C, R}])
                end,
                timer:sleep(SleepTime), %% @todo Make this precise
                Results
         catch
             C:R ->
-                ?error("Context setup failed: {~p, ~p}~n", [C, R]),
+                ?error("Context setup failed:", [{C, R}]),
                 {failure, {C, R}}
         end
     end, lists:seq(1, RunCount)),
@@ -170,6 +171,8 @@ be_careful() ->
 deps() -> [sasl, os_mon].
 
 ensure_deps_started() ->
+    application:load(sasl),
+    application:set_env(sasl, errlog_type, error),
     lists:foreach(fun start_dep/1, deps()).
 
 stop_deps() ->
