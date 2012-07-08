@@ -2,6 +2,7 @@
     %%later?
 -define(warnining(A, B), io:format("WARNING: " ++ A, B)).
 -define(error(A, B), io:format("ERROR: " ++ A, B)).
+-define(debug(A, B), error_logger:info_msg(A, B)).
 -define(silent(Expr), (
         fun() ->
                 error_logger:tty(false),

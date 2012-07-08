@@ -17,8 +17,8 @@ perforator_metrics_test_() ->
             application:start(os_mon)
         end,
         fun(_) ->
-            ?silent(critical, application:stop(os_mon)),
-            ?silent(critical, application:stop(sasl))
+            ?silent(application:stop(os_mon)),
+            ?silent(application:stop(sasl))
          end,
         [
             {"Metrics lookup test", fun test_metrics/0},

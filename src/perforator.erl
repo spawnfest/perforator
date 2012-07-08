@@ -21,7 +21,8 @@ run(Module) ->
     ok = ensure_deps_started(),
     Tests = perforator_module_parser:extract_test_objs(Module),
     TestResults = run_tests(Tests),
-    perforator_results:save(Module, TestResults).
+    ok = perforator_results:save(Module, TestResults),
+    stop_deps().
 
 run_tests(Tests) ->
     lists:flatten(lists:map(fun (Test) ->
@@ -136,7 +137,7 @@ run_testcase_cleanup(Opts, Args) ->
     (proplists:get_value(cleanup_fun, Opts, fun (_) -> ok end))(Args).
 
 maybe_strip_args(0, _Args) -> []; %% got some args but we don't want them.
-maybe_strip_args(_, Args) -> Args.
+maybe_strip_args(_Arity, Args) -> [Args].
 
 %% ============================================================================
 %% Type checks
@@ -153,9 +154,13 @@ be_careful() ->
     erlang:garbage_collect(),
     timer:sleep(500).
 
+deps() -> [sasl, os_mon].
+
 ensure_deps_started() ->
-    Deps = [sasl, os_mon],
-    lists:foreach(fun start_dep/1, Deps).
+    lists:foreach(fun start_dep/1, deps()).
+
+stop_deps() ->
+    ?silent(lists:foreach(fun application:stop/1, lists:reverse(deps()))).
 
 start_dep(App) ->
     case application:start(App) of
