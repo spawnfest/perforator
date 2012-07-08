@@ -22,6 +22,7 @@ add this baby to your `rebar.config`:
 ```
 
 The testing goes like this:
+
 # Write some `*_perf.erl` modules and put them in your `tests/` directory.
 # Run `./rebar perf`
 # Exlore the wonderful results written in `.perf/`
