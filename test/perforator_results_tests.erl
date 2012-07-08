@@ -46,15 +46,20 @@ test_save_results() ->
     FilePath = ".perf/" ++ LastFile,
     {ok, Contents} = file:consult(FilePath),
     ?assertMatch(
-        [[
-            [{test_suite, _},{datetime,_}],
+        [{_, [
+            {date, _},
             {totals, [
-                {test_count, 1},
-                {failure_count, 0}
+                {test_count, _},
+                {failure_count, _}
             ]},
-            {tests, [
-                {"foobar_perf", _}
+            {test_cases, [
+                {<<"foobar_perf">>, [
+                    {successful, true},
+                    {test_conditions, _},
+                    {result, _},
+                    {runs, _}
+                ]}
             ]}
-        ]],
+        ]}],
         Contents
     ).
