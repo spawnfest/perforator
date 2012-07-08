@@ -2,6 +2,7 @@
 -compile(export_all).
 
 -include_lib("eunit/include/eunit.hrl").
+-include("include/log_utils.hrl").
 
 %% ============================================================================
 %% Unit Test descriptions
@@ -23,7 +24,7 @@ perforator_results_test_() ->
 test_save_results() ->
     application:load(perforator),
     application:set_env(perforator, result_dir, ".perf/"),
-    perforator_results:save(foobar_perf,
+    ?silent(perforator_results:save(foobar_perf,
         [{foobar_perf,
             [{runs,
                 [{1,
@@ -37,7 +38,7 @@ test_save_results() ->
                     ]}
                 }]
             }]
-        }]),
+        }])),
     {ok,ListDir} = file:list_dir(".perf"),
     BasenameList = [File ||
         File <- ListDir, lists:prefix(atom_to_list(foobar_perf), File)],

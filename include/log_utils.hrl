@@ -1,8 +1,23 @@
--define(info(A, B), io:format("INFO: " ++ A, B)). %% io:format/2 for now, move to lager
-    %%later?
--define(warnining(A, B), io:format("WARNING: " ++ A, B)).
--define(error(A, B), io:format("ERROR: " ++ A, B)).
--define(debug(A, B), error_logger:info_msg(A, B)).
+%% ============================================================================
+%% Log utils
+%% ============================================================================
+
+% Use these only for pretty prints in tests/console!
+-define(DEFAULT_INFO(Msg), [
+    {pid, self()},
+    {source, ?FILE ++ ":" ++ integer_to_list(?LINE)},
+    {message, Msg}
+]).
+
+-define(error(Msg, Opts),
+    error_logger:error_report(?DEFAULT_INFO(Msg) ++ Opts)).
+
+-define(warning(Msg, Opts),
+    error_logger:warning_report(?DEFAULT_INFO(Msg) ++ Opts)).
+
+-define(info(Msg, Opts),
+    error_logger:info_report(?DEFAULT_INFO(Msg) ++ Opts)).
+
 -define(silent(Expr), (
         fun() ->
                 error_logger:tty(false),
