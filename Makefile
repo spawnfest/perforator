@@ -1,5 +1,3 @@
-ERLOPTS:= -config app.config -boot start_sasl
-
 rebar = rebar
 
 default: compile
@@ -17,16 +15,16 @@ nodeps:
 	$(rebar) compile skip_deps=true
 
 test:
-	EUNIT_FLAGS="$(ERLOPTS)" $(rebar) skip_deps=true eunit
+	$(rebar) skip_deps=true eunit
 
 test_%:
 	$(rebar) skip_deps=true suite=$* eunit
 
 perf:
-	ERL_FLAGS="$(ERLOPTS)" $(rebar) skip_deps=true perf
+	$(rebar) skip_deps=true perf
 
 perf_%:
-	ERL_FLAGS="$(ERLOPTS)" $(rebar) skip_deps=true suite=$* perf
+	$(rebar) skip_deps=true suite=$* perf
 
 shell:
 	erl -pa ebin/ -pa deps/*/ebin/ -sname shell
