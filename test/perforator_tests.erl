@@ -16,7 +16,7 @@ perforator_test_() ->
         [
             %{"Fun in {setup, ..} corret name ", fun test_fun_in_setup_name/0}
             {"Correct duration", fun test_correct_duration/0},
-            {"{foreach, ..} fixture test", fun test_foreach_perf/0}
+            {"{foreach, ..} fixture test", {timeout, 10000, fun test_foreach_perf/0}}
         ]
     }.
 
