@@ -31,7 +31,6 @@ run_tests(Tests) ->
 
 run_test({foreach, SetupFun, CleanupFun, TestObjs}) ->
     lists:map(fun (TestObj) ->
-        be_careful(),
         run_test({setup, SetupFun, CleanupFun, TestObj})
     end, TestObjs);
 run_test({setup, SetupFun, CleanupFun, TestObj}) ->
@@ -42,23 +41,38 @@ run_test({setup, SetupFun, CleanupFun, TestObj}) ->
                 {cleanup_fun, CleanupFun}
             ]);
         false ->
-            run_test(TestObj)
+            %% @todo: refactor!
+            try run_testcase_setup([]) of
+               Args ->
+                   be_careful(), %% @todo Make this precise
+                   Results = run_test(TestObj),
+                   try run_testcase_cleanup([], Args)
+                   catch C:R ->
+                       ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
+                   end,
+                   be_careful(), %% @todo Make this precise
+                   Results
+            catch
+                C:R ->
+                    ?error("Context setup failed: {~p, ~p}~n", [C, R]),
+                    {failure, {C, R}}
+            end
     end;
 run_test(PrimitiveTestObj) ->
     case test_obj_is_primitive(PrimitiveTestObj) of
         true ->
             exec_primitive_test_obj(PrimitiveTestObj);
-        else ->
+        false ->
             ?error("Unrecognized test object ~p, aborting~n",
                 [PrimitiveTestObj]),
             {error, {unknown_test_object, PrimitiveTestObj}}
     end.
 
 exec_primitive_test_obj({repeat, TestObj, _, _}) ->
-    %% TBD
+    %% @todo: TBD
    exec_primitive_test_obj(TestObj);
 exec_primitive_test_obj({desc, _, TestObj}) ->
-    %% TBD
+    %% @todo: TBD
     exec_primitive_test_obj(TestObj);
 exec_primitive_test_obj(Fun) ->
     exec_primitive_test_obj(Fun, []).
