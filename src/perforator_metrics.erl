@@ -40,13 +40,13 @@ retrieve(Pid) ->
 
 -spec agregate([{atom(), integer() | float()}]) ->
 [
-    {average, [{atom(), integer() | float()}]} |
+    {mean, [{atom(), integer() | float()}]} |
     {min, [{atom(), integer() | float()}]} |
     {max, [{atom(), integer() | float()}]}
 ].
 agregate(PropList) ->
     [
-        {average, perforator_stats:average(PropList)},
+        {mean, perforator_stats:average(PropList)},
         {min, perforator_stats:min(PropList)},
         {max, perforator_stats:max(PropList)}
     ].

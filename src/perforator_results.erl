@@ -106,8 +106,8 @@ get_total_duration(TestsOutput) ->
                     RunCount = proplists:get_value(run_count,
                         proplists:get_value(test_conditions, CaseData)),
                     AvgDuration =
-                        proplists:get_value(duration,
-                            proplists:get_value(average,
+                        proplists:get_value(mean,
+                            proplists:get_value(duration,
                                 proplists:get_value(result, CaseData)
                             )
                         ),
@@ -140,9 +140,10 @@ get_total_failures(TestsOutput) ->
     ).
 
 calc_test_case_averages(TestCaseMetrics) ->
-    {average, perforator_stats:average([
+    % @todo use mean instead of average all the way down (and up)
+    {mean, perforator_stats:average([
         [proplists:lookup(duration, Metric)]
-            ++ proplists:get_value(average, Metric) ||
+            ++ proplists:get_value(mean, Metric) ||
         Metric <- TestCaseMetrics
         ]
     )}.
@@ -167,7 +168,8 @@ calc_test_case_output(TestCase={CaseName, _}) ->
         [{failure, _} | _] ->
             format_failing_setup(TestCase);
         _ ->
-            Runs = [get_metrics(Run) || Run={_Id, {success, _}} <- get_runs(TestCase)],
+            Runs = [get_metrics(Run) ||
+                Run={_Id, {success, _}} <- get_runs(TestCase)],
             RunsResults = [RunResult ||
                 {_Id, [{success, true}, {results, RunResult}]} <- Runs],
             RunsFailures = length([ 1 ||
@@ -184,16 +186,15 @@ format_failing_setup(TestCase={CaseName, _}) ->
     [{failure, Info} | _ ] = get_runs(TestCase),
     {list_to_binary(atom_to_list(CaseName)), [
         {successful, false},
-        {failure, Info}
+        {failure, term_to_binary(Info)}
     ]}.
 
 format_failing_case_output(CaseName, TestCase) ->
     Runs = get_runs(TestCase),
-    erlang:display(Runs),
     [{_Id, {failure, Info}} | _ ] = Runs,
     {list_to_binary(atom_to_list(CaseName)), [
         {successful, false},
-        {failure, Info}
+        {failure, term_to_binary(Info)}
     ]}.
 
 format_successful_case_output(CaseName, Runs, RunsResults, RunsFailures) ->
@@ -203,12 +204,14 @@ format_successful_case_output(CaseName, Runs, RunsResults, RunsFailures) ->
                 {run_count, length(RunsResults)},
                 {sleep_time, get_sleep_time()}
             ]},
-            {result, [
-                {failures, RunsFailures},
-                calc_test_case_averages(RunsResults),
-                calc_test_case_mins(RunsResults),
-                calc_test_case_maxs(RunsResults)
-            ]},
+            {result,
+                [{failures, RunsFailures}] ++
+                reformat_ble([
+                    calc_test_case_averages(RunsResults),
+                    calc_test_case_mins(RunsResults),
+                    calc_test_case_maxs(RunsResults)
+                ])
+            },
             {runs,
                 [{Id, [{results, Results}]} ||
                     {Id, [{success, true}, {results, Results}]}<-Runs
@@ -218,3 +221,9 @@ format_successful_case_output(CaseName, Runs, RunsResults, RunsFailures) ->
 
 get_sleep_time() ->
     ?DEFAULT_SLEEP_TIME.
+
+%% @todo FIX WAT IDENTATION
+reformat_ble(Proplists = [{_, Stats} | _ ]) ->
+   [{Metric,
+        [{Tag, proplists:get_value(Metric, List)} || {Tag, List} <- Proplists]}
+        || {Metric, _Val} <- Stats].
