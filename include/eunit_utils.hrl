@@ -74,15 +74,17 @@
 -else.
 -define(assertApprox(ExpectedValue, ObservedValue),
     ((fun () ->
-        case (abs(ObservedValue - ExpectedValue) / ExpectedValue) of
-           X when X =< (1 - ?CONFIDENCE_VALUE) ->
+        %% wrap values into ( ) because we are in a macro.
+        case abs((ObservedValue) - (ExpectedValue)) / (ExpectedValue) of
+            X when X =< (1 - (?CONFIDENCE_VALUE)) ->
                 ok;
-            _ ->
+            E ->
                 erlang:error({assertApprox_failed, [
                     {module, ?MODULE},
                     {line, ?LINE},
                     {expected_value, ExpectedValue},
-                    {observed_value, ObservedValue}
+                    {observed_value, ObservedValue},
+                    {confidence, E}
                 ]})
         end
     end)())

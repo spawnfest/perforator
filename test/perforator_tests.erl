@@ -39,7 +39,7 @@ test_correct_duration() ->
         ?assertMatch({success, _}, RunResults),
         {success, Stats} = RunResults,
         Duration = proplists:get_value(duration, Stats),
-        ?assertApprox(100*1000, Duration)
+        ?assertApprox(?TEST_FUN_SLEEP*1000, Duration)
     end, get_runs(Results)).
 
 test_foreach_perf() ->
