@@ -1,9 +1,9 @@
 -module(perforator_tests).
 
 -include_lib("eunit/include/eunit.hrl").
--include("include/perforator.hrl").
--include("include/eunit_utils.hrl").
--include("include/log_utils.hrl").
+-include("perforator.hrl").
+-include("eunit_utils.hrl").
+-include("log_utils.hrl").
 
 -define(TEST_FUN_SLEEP, 100). % 100ms
 

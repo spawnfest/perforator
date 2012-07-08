@@ -2,7 +2,7 @@
 -compile(export_all).
 
 -include_lib("eunit/include/eunit.hrl").
--include("include/log_utils.hrl").
+-include("log_utils.hrl").
 
 %% ============================================================================
 %% Unit Test descriptions

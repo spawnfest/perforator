@@ -8,8 +8,8 @@
     run/1
 ]).
 
--include("include/log_utils.hrl").
--include("include/perforator.hrl").
+-include("log_utils.hrl").
+-include("perforator.hrl").
 
 -ifdef(TEST).
 -compile(export_all).
@@ -19,7 +19,9 @@
 run(Module) ->
     ?silent(ok = ensure_deps_started()),
     Tests = perforator_module_parser:extract_test_objs(Module),
-    ?status("Perforating module ~p:", [Module]),
+    ?status("====================================================~n", []),
+    ?status("Perforating module: ~p~n", [Module]),
+    ?status("====================================================~n", []),
     TestResults = run_tests(Tests),
     ok = perforator_results:save(Module, TestResults),
     ?silent(stop_deps()).
@@ -88,7 +90,7 @@ exec_primitive_test_obj({raw_fun, FunSpec={_Module, _Function, _Arity}}, Opts) -
 exec_test_case(FunSpec, Opts) ->
     RunCount = proplists:get_value(run_count, Opts, ?DEFAULT_RUN_COUNT),
     SleepTime = proplists:get_value(sleep_time, Opts, ?DEFAULT_SLEEP_TIME),
-    ?status("Running test... ~p", [get_test_case_name(FunSpec)]),
+    ?status("Running test: ~p...~n", [get_test_case_name(FunSpec)]),
     RunResults = lists:map(fun (RunNum) ->
         try run_testcase_setup(Opts) of
            Args ->

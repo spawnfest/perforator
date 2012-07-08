@@ -12,14 +12,8 @@
 -define(error(Msg, Opts),
     error_logger:error_report(?DEFAULT_INFO(Msg) ++ Opts)).
 
--define(warning(Msg, Opts),
-    error_logger:warning_report(?DEFAULT_INFO(Msg) ++ Opts)).
-
--define(info(Msg, Opts),
-    error_logger:info_report(?DEFAULT_INFO(Msg) ++ Opts)).
-
 -define(status(Msg, Opts),
-    error_logger:info_report(io_lib:format(Msg, Opts))).
+    io:format(Msg, Opts)).
 
 -define(silent(Expr), (
         fun() ->

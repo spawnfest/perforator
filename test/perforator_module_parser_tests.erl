@@ -2,7 +2,7 @@
 -compile(export_all).
 
 -include_lib("eunit/include/eunit.hrl").
--include("include/eunit_utils.hrl").
+-include("eunit_utils.hrl").
 
 export_tests_test() ->
     TestModule = tested_module_perf_not,

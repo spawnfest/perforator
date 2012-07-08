@@ -1,7 +1,7 @@
 -module(perforator_results).
 
--include("include/log_utils.hrl").
--include("include/perforator.hrl").
+-include("log_utils.hrl").
+-include("perforator.hrl").
 
 -export([
     save/2
@@ -17,7 +17,7 @@ save(Module, TestResults) ->
     FilePath = get_dir() ++ atom_to_list(Module) ++
         "_suite_results_" ++ Timestamp ++ ".perf",
     ok = filelib:ensure_dir(FilePath),
-    ?status("Writing perforator results to file ~s~n", [FilePath]),
+    ?status("~nDone!~nWriting perforator results to file: ~s~n~n", [FilePath]),
     ok = file:write_file(FilePath,
         io_lib:format("~p.~n",
             [convert_format(Module, TestResults, get_format())]

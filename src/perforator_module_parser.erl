@@ -4,7 +4,7 @@
 
 -module(perforator_module_parser).
 
--include("include/perforator.hrl").
+-include("perforator.hrl").
 
 -export([
     extract_test_objs/1
