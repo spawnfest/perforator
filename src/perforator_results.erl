@@ -186,7 +186,7 @@ format_failing_setup(TestCase={CaseName, _}) ->
     [{failure, Info} | _ ] = get_runs(TestCase),
     {list_to_binary(atom_to_list(CaseName)), [
         {successful, false},
-        {failure, Info}
+        {failure, term_to_binary(Info)}
     ]}.
 
 format_failing_case_output(CaseName, TestCase) ->
@@ -194,7 +194,7 @@ format_failing_case_output(CaseName, TestCase) ->
     [{_Id, {failure, Info}} | _ ] = Runs,
     {list_to_binary(atom_to_list(CaseName)), [
         {successful, false},
-        {failure, Info}
+        {failure, term_to_binary(Info)}
     ]}.
 
 format_successful_case_output(CaseName, Runs, RunsResults, RunsFailures) ->
