@@ -10,6 +10,8 @@ list_operations_perf_() ->
         fun setup/0,
         fun cleanup/1,
         [
+            %% you have to use ?MODULE:Name/0 for now to get nice
+            %% test names for now, sorry.
             fun ?MODULE:stupid_list_ops/0,
             fun ?MODULE:good_list_ops/0
         ]
