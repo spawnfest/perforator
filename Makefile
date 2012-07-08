@@ -1,11 +1,11 @@
-rebar = rebar
+rebar=./rebar
 
 default: compile
 
 get-deps:
 	$(rebar) get-deps
 
-compile:
+compile: get-deps
 	$(rebar) compile
 
 clean:
@@ -30,4 +30,4 @@ shell:
 	erl -pa ebin/ -pa deps/*/ebin/ -sname shell
 
 
-.PHONY: test
+.PHONY: test get-deps
