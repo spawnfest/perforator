@@ -13,7 +13,9 @@ list_operations_perf_() ->
             %% you have to use ?MODULE:Name/0 for now to get nice
             %% test names for now, sorry.
             fun ?MODULE:stupid_list_ops/0,
-            fun ?MODULE:good_list_ops/0
+            fun ?MODULE:good_list_ops/0,
+            fun ?MODULE:good_append/0,
+            fun ?MODULE:bad_append/0
         ]
     }.
 
@@ -33,3 +35,21 @@ bad_reverse([]) ->
     [];
 bad_reverse([X|XS]) ->
     bad_reverse(XS) ++ [X].
+
+good_append() ->
+    lists:reverse(lists:foldl(
+        fun (N, Acc) ->
+            [N] ++ Acc
+        end,
+        [],
+        lists:seq(1, ?LIST_LEN)
+    )).
+
+bad_append() ->
+    lists:foldl(
+        fun (N, Acc) ->
+            Acc ++ [N]
+        end,
+        [],
+        lists:seq(1, ?LIST_LEN)
+    ).
