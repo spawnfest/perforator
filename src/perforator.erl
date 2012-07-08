@@ -48,13 +48,13 @@ run_test({setup, SetupFun, CleanupFun, TestObj}) ->
                    Results = run_test(TestObj),
                    try run_testcase_cleanup([], Args)
                    catch C:R ->
-                       ?error("Context cleanup failed", [C, R])
+                       ?error("Context cleanup failed", [{C, R}])
                    end,
                    be_careful(), %% @todo Make this precise
                    Results
             catch
                 C:R ->
-                    ?error("Context setup failed", [C, R]),
+                    ?error("Context setup failed", [{C, R}]),
                     {failure, {C, R}}
             end
     end;
@@ -63,8 +63,8 @@ run_test(PrimitiveTestObj) ->
         true ->
             exec_primitive_test_obj(PrimitiveTestObj);
         false ->
-            ?error("Unrecognized test object ~p, aborting~n",
-                [PrimitiveTestObj]),
+            ?error("Unrecognized test object, aborting",
+                [{obj, PrimitiveTestObj}]),
             {error, {unknown_test_object, PrimitiveTestObj}}
     end.
 
@@ -96,13 +96,13 @@ exec_test_case(FunSpec, Opts) ->
                Results = {RunNum, perform_run(FunSpec, Args)},
                try run_testcase_cleanup(Opts, Args)
                catch C:R ->
-                   ?error("Context cleanup failed: {~p, ~p}~n", [C, R])
+                   ?error("Context cleanup failed", [{C, R}])
                end,
                timer:sleep(SleepTime), %% @todo Make this precise
                Results
         catch
             C:R ->
-                ?error("Context setup failed: {~p, ~p}~n", [C, R]),
+                ?error("Context setup failed:", [{C, R}]),
                 {failure, {C, R}}
         end
     end, lists:seq(1, RunCount)),

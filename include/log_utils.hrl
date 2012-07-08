@@ -29,7 +29,7 @@
                 catch
                     C:R ->
                         error_logger:tty(true),
-                        ?error("shouldn't have silenced here", [C,R])
+                        ?error("shouldn't have silenced here", [{C, R}])
                 after
                     error_logger:tty(true)
                 end
