@@ -4,6 +4,12 @@
 
 -define(PERFORATOR_DIR, ".perf").
 
+-export([
+    perf/2,
+    clean/2,
+    'perf-clean'/2
+]).
+
 perf(Config, _AppFile) ->
     ok = filelib:ensure_dir(perforator_dir() ++ "/bin/foobar"),
     ok = filelib:ensure_dir(ebin_dir() ++ "/foobar"),
@@ -26,6 +32,9 @@ perf(Config, _AppFile) ->
 
 %% rebar clean hook
 clean(_Config, _AppFile) ->
+    rebar_file_utils:rm_rf(".perf").
+
+'perf-clean'(Config, _AppFile) ->
     rebar_file_utils:rm_rf(".perf").
 
 %% ============================================================================

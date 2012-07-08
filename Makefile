@@ -26,6 +26,9 @@ perf:
 perf_%:
 	$(rebar) skip_deps=true suite=$* perf
 
+perfclean:
+	$(rebar) skip_deps=true perf-clean
+
 shell:
 	erl -pa ebin/ -pa deps/*/ebin/ -sname shell
 
