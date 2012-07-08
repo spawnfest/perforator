@@ -55,7 +55,7 @@ test_dead_collector() ->
 test_agregate() ->
     ReadList = [[{foo, 2}, {bar, 15}], [{foo, 6}, {bar, 1}]],
     ExpectedReturn = [
-        {average, [{foo, 4.0}, {bar, 8.0}]},
+        {mean, [{foo, 4.0}, {bar, 8.0}]},
         {min, [{foo, 2}, {bar, 1}]},
         {max, [{foo, 6}, {bar, 15}]}
     ],

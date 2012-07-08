@@ -106,7 +106,7 @@ get_total_duration(TestsOutput) ->
                     RunCount = proplists:get_value(run_count,
                         proplists:get_value(test_conditions, CaseData)),
                     AvgDuration =
-                        proplists:get_value(average,
+                        proplists:get_value(mean,
                             proplists:get_value(duration,
                                 proplists:get_value(result, CaseData)
                             )
@@ -140,9 +140,10 @@ get_total_failures(TestsOutput) ->
     ).
 
 calc_test_case_averages(TestCaseMetrics) ->
-    {average, perforator_stats:average([
+    % @todo use mean instead of average all the way down (and up)
+    {mean, perforator_stats:average([
         [proplists:lookup(duration, Metric)]
-            ++ proplists:get_value(average, Metric) ||
+            ++ proplists:get_value(mean, Metric) ||
         Metric <- TestCaseMetrics
         ]
     )}.
@@ -190,7 +191,6 @@ format_failing_setup(TestCase={CaseName, _}) ->
 
 format_failing_case_output(CaseName, TestCase) ->
     Runs = get_runs(TestCase),
-    erlang:display(Runs),
     [{_Id, {failure, Info}} | _ ] = Runs,
     {list_to_binary(atom_to_list(CaseName)), [
         {successful, false},
