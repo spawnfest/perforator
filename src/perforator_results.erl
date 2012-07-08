@@ -106,8 +106,8 @@ get_total_duration(TestsOutput) ->
                     RunCount = proplists:get_value(run_count,
                         proplists:get_value(test_conditions, CaseData)),
                     AvgDuration =
-                        proplists:get_value(duration,
-                            proplists:get_value(average,
+                        proplists:get_value(average,
+                            proplists:get_value(duration,
                                 proplists:get_value(result, CaseData)
                             )
                         ),
@@ -167,7 +167,8 @@ calc_test_case_output(TestCase={CaseName, _}) ->
         [{failure, _} | _] ->
             format_failing_setup(TestCase);
         _ ->
-            Runs = [get_metrics(Run) || Run={_Id, {success, _}} <- get_runs(TestCase)],
+            Runs = [get_metrics(Run) ||
+                Run={_Id, {success, _}} <- get_runs(TestCase)],
             RunsResults = [RunResult ||
                 {_Id, [{success, true}, {results, RunResult}]} <- Runs],
             RunsFailures = length([ 1 ||
@@ -203,12 +204,14 @@ format_successful_case_output(CaseName, Runs, RunsResults, RunsFailures) ->
                 {run_count, length(RunsResults)},
                 {sleep_time, get_sleep_time()}
             ]},
-            {result, [
-                {failures, RunsFailures},
-                calc_test_case_averages(RunsResults),
-                calc_test_case_mins(RunsResults),
-                calc_test_case_maxs(RunsResults)
-            ]},
+            {result,
+                [{failures, RunsFailures}] ++
+                reformat_ble([
+                    calc_test_case_averages(RunsResults),
+                    calc_test_case_mins(RunsResults),
+                    calc_test_case_maxs(RunsResults)
+                ])
+            },
             {runs,
                 [{Id, [{results, Results}]} ||
                     {Id, [{success, true}, {results, Results}]}<-Runs
@@ -218,3 +221,9 @@ format_successful_case_output(CaseName, Runs, RunsResults, RunsFailures) ->
 
 get_sleep_time() ->
     ?DEFAULT_SLEEP_TIME.
+
+%% @todo FIX WAT IDENTATION
+reformat_ble(Proplists = [{_, Stats} | _ ]) ->
+   [{Metric,
+        [{Tag, proplists:get_value(Metric, List)} || {Tag, List} <- Proplists]}
+        || {Metric, _Val} <- Stats].
