@@ -90,7 +90,7 @@ exec_primitive_test_obj({raw_fun, FunSpec={_Module, _Function, _Arity}}, Opts) -
 exec_test_case(FunSpec, Opts) ->
     RunCount = proplists:get_value(run_count, Opts, ?DEFAULT_RUN_COUNT),
     SleepTime = proplists:get_value(sleep_time, Opts, ?DEFAULT_SLEEP_TIME),
-    ?status("Running test: ~p...~n", [get_test_case_name(FunSpec)]),
+    ?status("Running test: ~p ...", [get_test_case_name(FunSpec)]),
     RunResults = lists:map(fun (RunNum) ->
         try run_testcase_setup(Opts) of
            Args ->
@@ -109,6 +109,7 @@ exec_test_case(FunSpec, Opts) ->
         end
     end, lists:seq(1, RunCount)),
     TestCaseName = get_test_case_name(FunSpec),
+    ?status("ok~n", []),
     {TestCaseName, [{runs, RunResults}]}.
 
 %% @doc Sorry for this FunSpec crap, but this is needed to:
