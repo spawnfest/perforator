@@ -14,6 +14,7 @@ perforator_test_() ->
         fun setup/0,
         fun cleanup/1,
         [
+            %{"Fun in {setup, ..} corret name ", fun test_fun_in_setup_name/0}
             {"Correct duration", fun test_correct_duration/0},
             {"{foreach, ..} fixture test", fun test_foreach_perf/0}
         ]
@@ -32,12 +33,14 @@ cleanup(_) ->
 
 test_correct_duration() ->
     Test = {raw_fun, {?MODULE, named_fun_perf, 0}},
-    Result = perforator:run_test(Test),
-    ?assertMatch({named_fun_perf, _}, Result),
-    lists:foreach(fun (Run) ->
-        Duration = get_duration(Run),
-        ?assertApprox(?TEST_FUN_SLEEP*1000, Duration)
-    end, get_runs(Result)).
+    Results = perforator:run_test(Test),
+    ?assertMatch({named_fun_perf, _}, Results),
+    lists:foreach(fun ({_Run, RunResults}) ->
+        ?assertMatch({success, _}, RunResults),
+        {success, Stats} = RunResults,
+        Duration = proplists:get_value(duration, Stats),
+        ?assertApprox(100*1000, Duration)
+    end, get_runs(Results)).
 
 test_foreach_perf() ->
     TestObj = {foreach, fun () -> ok end, fun (_) -> ok end, [
@@ -65,6 +68,21 @@ test_foreach_perf() ->
     CheckEverythingFun(Runs1),
     CheckEverythingFun(Runs2).
 
+%% @todo Fix + test this later
+%test_fun_in_setup_name() ->
+%    Fun = fun named_fun_perf/0,
+%    ?debug("FunInfo: ~p~n", [erlang:fun_info(Fun)]),
+%    {name, Name} = erlang:fun_info(Fun, name),
+%    ExternalFun = erlang:make_fun(?MODULE, Name, 0),
+%    ?debug("FunInfo2: ~p~n", [erlang:fun_info(ExternalFun)]),
+%    TestObj = {setup, fun () -> ok end, fun (_) -> ok end, fun named_fun_perf/0},
+%    Result = perforator:run_test(TestObj),
+%    {TestName, TestData} = Result,
+%    ?assertSublist( %% the name we get is f-d up, but you have to deal with it!
+%        atom_to_list(named_fun_perf),
+%        TestName
+%    ).
+
 %% ============================================================================
 %% Perf test functions
 %% ============================================================================
@@ -78,7 +96,6 @@ named_fun_perf() ->
 %% ============================================================================
 
 get_runs({_Name, Results}) ->
+    proplists:get_value(runs, Results);
+get_runs(Results) ->
     proplists:get_value(runs, Results).
-
-get_duration({_Name, Results}) ->
-    proplists:get_value(duration, Results).
