@@ -59,7 +59,15 @@ default_results_parse(TestResults) ->
     ]}.
 
 default_header(Module) ->
-    {test_suite, atom_to_list(Module)}.
+    {{Year, Month, Day}, {Hour, Min, _}} = calendar:local_time(),
+    Timestamp = io_lib:format(
+        "~4.10.0B~2.10.0B~2.10.0BT~2.10.0B~2.10.0B",
+        [Year, Month, Day, Hour, Min]
+    ),
+    [
+        {test_suite, atom_to_list(Module)},
+        {datetime, Timestamp}
+    ].
 
 default_totals({tests, TestsOutput}) ->
     {totals, [
@@ -84,11 +92,6 @@ get_metrics({RunId, {success, RunStats}}) ->
             {results, [Duration] ++  perforator_metrics:agregate(TickMetrics)}
         ]
     }.
-
-get_test_case_results(Runs) ->
-    TestCaseMetrics =
-        [proplists:get_value(results, Metrics)|| {_Id, Metrics} <- Runs],
-    calc_test_case_averages(TestCaseMetrics).
 
 get_failures(TestsOutput) ->
     lists:foldl(

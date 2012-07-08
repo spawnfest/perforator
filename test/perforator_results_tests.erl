@@ -46,7 +46,7 @@ test_save_results() ->
     {ok, Contents} = file:consult(FilePath),
     ?assertMatch(
         [[
-            {test_suite, _},
+            [{test_suite, _},{datetime,_}],
             {totals, [
                 {test_count, 1},
                 {failure_count, 0}
