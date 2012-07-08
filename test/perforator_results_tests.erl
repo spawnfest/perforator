@@ -50,7 +50,8 @@ test_save_results() ->
             {date, _},
             {totals, [
                 {test_count, _},
-                {failure_count, _}
+                {failure_count, _},
+                {duration, _}
             ]},
             {test_cases, [
                 {<<"foobar_perf">>, [

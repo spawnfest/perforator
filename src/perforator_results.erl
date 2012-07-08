@@ -52,6 +52,7 @@ get_dir() ->
             ResultDir
     end.
 
+
 default_results_parse(TestResults) ->
     {test_cases, [
             calc_test_case_output(TestCase) ||
@@ -66,8 +67,10 @@ default_header() ->
 default_totals({test_cases, TestsOutput}) ->
     {totals, [
         {test_count, length(TestsOutput)},
-        {failure_count, get_failures(TestsOutput)}
+        {failure_count, get_total_failures(TestsOutput)},
+        {duration, get_total_duration(TestsOutput)}
     ]}.
+
 
 -spec get_runs(perforator_results_types:test_case()) ->
     [perforator_results_types:test_case_run()].
@@ -93,7 +96,31 @@ get_metrics({RunId, {failure, _Info}}) ->
         ]
     }.
 
-get_failures(TestsOutput) ->
+%% @doc wrongly assumes that all tests have succeeded
+get_total_duration(TestsOutput) ->
+    lists:foldl(
+        fun(TestCase, Acc) ->
+            {_CaseName, CaseData} = TestCase,
+            case proplists:get_value(successful, CaseData) of
+                true ->
+                    RunCount = proplists:get_value(run_count,
+                        proplists:get_value(test_conditions, CaseData)),
+                    AvgDuration =
+                        proplists:get_value(duration,
+                            proplists:get_value(average,
+                                proplists:get_value(result, CaseData)
+                            )
+                        ),
+                    RunCount * AvgDuration + Acc;
+                false ->
+                    Acc
+            end
+        end,
+        0,
+        TestsOutput
+    ).
+
+get_total_failures(TestsOutput) ->
     lists:foldl(
         fun(TestCase, Acc) ->
             {_CaseName, CaseData} = TestCase,
@@ -113,12 +140,12 @@ get_failures(TestsOutput) ->
     ).
 
 calc_test_case_averages(TestCaseMetrics) ->
-    {average, [{results, perforator_stats:average([
+    {average, perforator_stats:average([
         [proplists:lookup(duration, Metric)]
             ++ proplists:get_value(average, Metric) ||
         Metric <- TestCaseMetrics
         ]
-    )}]}.
+    )}.
 
 calc_test_case_mins(TestCaseMetrics) ->
     {min, perforator_stats:min([
