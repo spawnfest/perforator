@@ -15,7 +15,7 @@ save(Module, TestResults) ->
         [Year, Month, Day, Hour, Min]
     ),
     FilePath = get_dir() ++ atom_to_list(Module) ++
-        "_suite_results" ++ Timestamp ++ ".perf",
+        "_suite_results_" ++ Timestamp ++ ".perf",
     ok = filelib:ensure_dir(FilePath),
     ?info("Writing perforator results to file ~s.~n", [FilePath]),
     ok = file:write_file(FilePath,
